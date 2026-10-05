@@ -1,0 +1,21 @@
+# Binaries
+user-service
+*.o
+*.a
+*.so
+
+# Go build cache
+.cache/
+bin/
+
+# Dependencies
+vendor/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
