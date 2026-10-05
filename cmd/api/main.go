@@ -58,3 +58,4 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, `{"profile":{"id":"1","email":"user@telecom.com","status":"active"}}`)
 }
+
