@@ -9,25 +9,29 @@ on:
       - 'go.mod'
       - 'Dockerfile'
       - '.github/workflows/build-deploy.yml'
+  workflow_dispatch:
 
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: 'read'
-      id-token: 'write'
+      contents: read
+      id-token: write
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v1
+        uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER_DEV }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_DEV }}
+          token_format: 'access_token'
+          access_token_lifetime: '600s'
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+        uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker us-central1-docker.pkg.dev
@@ -45,14 +49,13 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy user-service \
-            --image=us-central1-docker.pkg.dev/telecom-dev-123/telecom-registry/user-service:${{ github.sha }} \
-            --region=us-central1 \
-            --platform=managed \
+            --image us-central1-docker.pkg.dev/telecom-dev-123/telecom-registry/user-service:${{ github.sha }} \
+            --region us-central1 \
+            --platform managed \
             --allow-unauthenticated \
-            --port=8080
+            --port 8080
 
       - name: Post Deployment Summary
-        if: always()
         run: |
           echo "### User Service Build & Deploy" >> $GITHUB_STEP_SUMMARY
           echo "✅ Built and deployed to Cloud Run" >> $GITHUB_STEP_SUMMARY
